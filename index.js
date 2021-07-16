@@ -1,8 +1,13 @@
-const { response } = require('express')
+const morgan = require('morgan')
 const express = require('express')
 const app = express()
 
 app.use(express.json())
+app.use(morgan(':everypost'))
+
+morgan.token('everypost', function(req, res) {
+    console.log(JSON.stringify(req.body), 'huhu'); 
+})
 
 let persons = [
     {
