@@ -87,9 +87,17 @@ app.get('/api/persons/:id', (req, res) => {
 
     Person.findById(req.params.id)
     .then(person => {
-        res.json(person)
+        if(person){
+            res.json(person)
+        }else{
+            res.status(404).end()
+        }
+        
     })
-    .catch(()=>res.status(404).send('Error: Person does not exist'))
+    .catch(err=>{
+        console.log(err);
+        res.status(500).send({error: 'malformatted id'})
+    })
     
 })
 app.delete('/api/persons/:id', (req, res) => {
