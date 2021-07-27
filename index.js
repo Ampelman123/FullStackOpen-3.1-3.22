@@ -1,39 +1,30 @@
+require ('dotenv').config()
 const morgan = require('morgan')
+const Person = require('./models/person')
 const express = require('express')
-const cors = require('cors')
+const cors = require('cors');
+const { response } = require('express');
+const person = require('./models/person');
 const app = express()
+
+
 
 app.use(express.json())
 app.use(morgan(':everypost'))
 app.use(cors())
 app.use(express.static('build'))
 
+
 morgan.token('everypost', function(req, res) {
     console.log(JSON.stringify(req.body), 'huhu'); 
 })
 
-let persons = [
-    {
-        "id": 1,
-        "name": "Arto Hellas",
-        "number": "040-123456"
-    },
-    {
-        "id": 2,
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523"
-    },
-    {
-        "id": 3,
-        "name": "Dan Abramov",
-        "number": "12-43-234345"
-    },
-    {
-        "id": 4,
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
-    }
-]
+
+
+
+
+
+
 
 const generateId = () => {
     const maxId = persons.length > 0
@@ -56,50 +47,59 @@ app.post('/api/persons', (req, res) => {
             error: 'body is missing number'
         })
     }
-    if (persons.map(person => person.name).includes(body.name)) {
-        return res.status(400).json({
-            error: 'Person already in your phonebook'
-        })
-    }
+    Person.exists({name: body.name}).then(x => {
+        if (x) {
+            return res.status(400).json({
+                error: 'Person already in your phonebook'
+            })
+        }
+    })
+    
     console.log(req.body);
-    const person = {
-        id: generateId(),
+    const person = new Person({
         name: body.name ,
         number: body.number,
-    }
-    persons = persons.concat(person)
+    })
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
 
-    res.status(201).json(person)
 })
 app.get('/api/persons/', (req, res) => {
-    return res.status(200).json(persons)
+    Person.find({}).then(persons =>{
+        res.json(persons)
+    })
+    
 })
-app.get('/info', (req, res) => {
+app.get('/api/info', (req, res) => {
     let date = new Date();
-    //I hate myself for doing that
-    let str = "<div>"+"<p>"+'Phonebook has info for '+persons.length+' people'+"</p>"+"<p>"+date.toUTCString()+"</p>"+"</div>"
-    res.status(200).send(str)
+
+    Person.find({}).then(x=>{
+        //I hate myself for doing that
+        let str = "<div>"+"<p>"+'Phonebook has info for '+x.length+' people'+"</p>"+"<p>"+date.toUTCString()+"</p>"+"</div>"
+        res.status(200).send(str)
+    })
+   
+    
     
 })
 app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    person = persons.filter(person => person.id === id)
-    if(person){
-        res.status(200).json(person)
-    }else{
-        res.status(404).send('Error: Person does not exist')
-    }
+
+    Person.findById(req.params.id)
+    .then(person => {
+        res.json(person)
+    })
+    .catch(()=>res.status(404).send('Error: Person does not exist'))
     
 })
 app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    persons = persons.filter(person => person.id !== id)
+    Person.findByIdAndRemove(req.params.id).then(()=>res.status(204).end())
 
-    res.status(204).end()
+    
     
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
