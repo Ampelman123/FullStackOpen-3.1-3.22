@@ -5,3 +5,11 @@ Content-Type: application/json
     "name": "Hagen",
     "number": "69"
 }
+###
+POST https://frozen-tundra-20015.herokuapp.com/api/persons
+Content-Type: application/json
+
+{
+    "name": "Hagen",
+    "number": "69"
+}

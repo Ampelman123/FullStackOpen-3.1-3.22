@@ -6,6 +6,7 @@ const app = express()
 app.use(express.json())
 app.use(morgan(':everypost'))
 app.use(cors())
+app.use(express.static('build'))
 
 morgan.token('everypost', function(req, res) {
     console.log(JSON.stringify(req.body), 'huhu'); 
