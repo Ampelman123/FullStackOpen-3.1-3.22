@@ -67,7 +67,7 @@ app.post('/api/persons', (req, res) => {
 
 })
 app.put('/api/persons/:id', (req, res) => {
-   Person.findByIdAndUpdate(req.params.id, req.body)
+   Person.findByIdAndUpdate(req.params.id, req.body,true)
    .then(updated => {
        res.json(updated)
    })
